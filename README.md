@@ -1,6 +1,10 @@
 # Mr Bucket
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/D_Bbf7hX5I0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=D_Bbf7hX5I0">
+    <img src="https://img.youtube.com/vi/D_Bbf7hX5I0/0.jpg"/>
+  </a>
+</p>
 
 Largely taken from [this Vue.js Websocket Tutorial on TutorialEdge.net](https://tutorialedge.net/javascript/vuejs/vuejs-websocket-tutorial/). Except I display the messages on the page, and provide a valid test endpoint (thanks to [Pie Socket](https://www.piesocket.com/websocket-tester)).
 
