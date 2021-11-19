@@ -5,6 +5,12 @@
   </i></span>
   <br>
 
+  <div v-if="errors">
+    <div class="well error-msg">
+      {{ errors }}
+    </div>
+  </div>
+
   <label for="name">Socket Endpoint: </label>
   <input v-model="endpoint" placeholder="<websocket URL>">
 
@@ -31,7 +37,8 @@ export default {
       endpoint: null,
       connection: null,
       receivedMessages: [],
-      connectionOk: false
+      connectionOk: false,
+      errors: ""
     }
   },
   methods: {
@@ -42,7 +49,6 @@ export default {
       this.connectionOk = false;
       this.connection.close();
       this.connection = null;
-      this.endpoint = "";
       this.receivedMessages = [];
     },
 
@@ -58,8 +64,15 @@ export default {
       if (this.connection) { this.disconnect() }
 
       this.receivedMessages = [];
-      console.log("Starting connection to WebSocket Server")
+      this.errors = "";
+
+      console.log("Attempting to connect to " + this.endpoint)
       this.connection = new WebSocket(this.endpoint)
+
+      this.connection.onerror = function(event) {
+        this.errors = "Failed to connect: " + JSON.stringify(event)
+        this.disconnect();
+      }.bind(this)
 
       this.connection.onmessage = function(event) {
         this.appendMessage(event)
@@ -109,5 +122,10 @@ export default {
       border-radius: 4px;
       -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
       box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+      max-height: 340px;
+      overflow-y: scroll;
+  }
+  .error-msg {
+    background-color: #FACCCC;
   }
 </style>
