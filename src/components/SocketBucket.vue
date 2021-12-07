@@ -11,8 +11,21 @@
     </div>
   </div>
 
-  <label for="name">Socket Endpoint: </label>
-  <input v-model="endpoint" placeholder="<websocket URL>">
+  <div v-if="debug">
+    <div class="well">
+      {{ debug }}
+    </div>
+  </div>
+
+  <div class="input-pane">
+    <label for="name">Socket Endpoint: </label>
+    <input v-model="endpoint" placeholder="<websocket URL>">
+
+    <br/>
+    <label for="name">Auth Token: </label>
+    <input type="password" v-model="authToken"
+      placeholder="<If not set, omits 'Authorization' cookie. Note: this does not dictate how server auths!>">
+  </div>
 
   <span v-if="!connectionOk"> ❌ </span>
   <span v-if="connectionOk"> ✅ </span>
@@ -38,18 +51,23 @@ export default {
       connection: null,
       receivedMessages: [],
       connectionOk: false,
-      errors: ""
+      authToken: "",
+      errors: "",
+      debug: "",
     }
   },
   methods: {
     disconnect: function() {
       if (!this.connection) { return; }
 
-      console.log("Closing connection to " + this.endpoint);
       this.connectionOk = false;
       this.connection.close();
       this.connection = null;
       this.receivedMessages = [];
+
+      if (!this.debug) {
+        this.debug = "Connection to " + this.endpoint + " closed."
+      }
     },
 
     clearMessages: function() {
@@ -65,8 +83,13 @@ export default {
 
       this.receivedMessages = [];
       this.errors = "";
+      this.debug = ""
 
       console.log("Attempting to connect to " + this.endpoint)
+      if (this.authToken) {
+        document.cookie = 'Authorization=token ' + this.authToken + '; path=/';
+        console.log("Token detected, setting Authorization cookie")
+      }
       this.connection = new WebSocket(this.endpoint)
 
       this.connection.onerror = function(event) {
@@ -74,7 +97,19 @@ export default {
         this.disconnect();
       }.bind(this)
 
+      this.connection.onclose = function() {
+        const lastMessage = this.receivedMessages[this.receivedMessages.length - 1]
+        this.debug = "Connection to " + this.endpoint +
+          " closed. Last message: " + lastMessage.data
+        this.disconnect();
+      }.bind(this)
+
       this.connection.onmessage = function(event) {
+        const event_data = JSON.parse(event.data || {})
+        if (event_data.type === 'ping') {
+          return
+        }
+
         this.appendMessage(event)
       }.bind(this)
 
@@ -106,6 +141,11 @@ export default {
   input {
     width: 50%;
     padding-right: 2;
+  }
+  .input-pane {
+    float: left;
+    overflow: hidden;
+    width: 100%;
   }
   .msg-format-ctl {
     float: right;
